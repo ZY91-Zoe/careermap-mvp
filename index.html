@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CareerMap</title>
+    <link rel="stylesheet" href="./src/styles.css">
+  </head>
+  <body>
+    <div class="app-layout">
+      <aside class="side-nav">
+        <div class="brand-block">
+          <span class="brand-mark">CM</span>
+          <div>
+            <strong>CareerMap</strong>
+            <small>职业路径工具</small>
+          </div>
+        </div>
+        <nav class="feature-nav" aria-label="功能导航">
+          <button class="nav-button is-active" type="button" data-view="planner-view">路径规划</button>
+          <button class="nav-button" type="button" data-view="assessment-view">职业测评</button>
+        </nav>
+        <div class="nav-note">
+          <span>v0.3</span>
+          <p id="backend-status">本地模拟数据</p>
+        </div>
+      </aside>
+
+      <main class="main-shell">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Career Intelligence</p>
+            <h1>职业路径规划台</h1>
+          </div>
+          <p>先用职业档案生成路径；不确定方向时，可单独做职业测评，再把推荐岗位带回规划。</p>
+        </header>
+
+        <section id="planner-view" class="view">
+          <form id="career-form" class="planner-grid">
+            <section class="input-surface">
+              <div class="section-heading">
+                <div>
+                  <p class="section-kicker">Profile</p>
+                  <h2>职业档案</h2>
+                </div>
+                <button class="primary-button" type="submit">
+                  <span id="submit-label">生成路径</span>
+                </button>
+              </div>
+
+              <div class="field-grid">
+                <label>
+                  当前岗位
+                  <input id="current-role" name="currentRole" list="role-options" autocomplete="off">
+                </label>
+                <label>
+                  工作年限
+                  <input id="years" name="years" type="number" min="0" max="30" step="1">
+                </label>
+                <label>
+                  所在城市
+                  <input id="city" name="city" autocomplete="address-level2">
+                </label>
+                <label>
+                  期望方向
+                  <select id="direction" name="direction">
+                    <option value="unsure">还不确定</option>
+                    <option value="vertical">纵向晋升</option>
+                    <option value="horizontal">横向转型</option>
+                  </select>
+                </label>
+                <label class="wide-field">
+                  目标岗位 <span>选填</span>
+                  <input id="target-role" name="targetRole" list="role-options" autocomplete="off" placeholder="不确定可以留空，系统会先给路径建议">
+                </label>
+              </div>
+
+              <section class="education-editor">
+                <div class="section-subhead">
+                  <div>
+                    <h3>教育经历 <span>选填，可添加多段</span></h3>
+                    <p>例如本科、研究生、MBA、第二专业、培训项目等。</p>
+                  </div>
+                  <button id="add-education" class="ghost-button" type="button">添加</button>
+                </div>
+                <div id="education-list" class="education-list"></div>
+              </section>
+
+              <label class="experience-field">
+                工作经历摘要 <span>选填</span>
+                <textarea id="experience" name="experience" placeholder="可以写：负责会议纪要、公文材料、跨部门项目、预算采购、领导汇报等"></textarea>
+              </label>
+            </section>
+
+            <section class="result-surface" aria-live="polite">
+              <div class="summary-card">
+                <div>
+                  <p class="section-kicker">Overview</p>
+                  <h2 id="summary-title">正在生成职业路径</h2>
+                  <p id="summary-copy" class="summary-copy"></p>
+                  <div id="profile-signals" class="profile-signals"></div>
+                </div>
+                <div class="score-tile">
+                  <span id="score-value">--</span>
+                  <small id="score-label">匹配度</small>
+                </div>
+              </div>
+            </section>
+          </form>
+
+          <section class="workspace-section path-section">
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Path Map</p>
+                <h2>职业路径地图</h2>
+              </div>
+              <div id="active-target" class="target-pill"></div>
+            </div>
+            <div class="path-grid">
+              <div class="path-column">
+                <h3>纵向晋升</h3>
+                <p id="vertical-note" class="path-note"></p>
+                <div id="vertical-path" class="vertical-path"></div>
+              </div>
+              <div class="path-column">
+                <h3>横向迁移</h3>
+                <div id="horizontal-paths" class="horizontal-paths"></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="workspace-section">
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Gap Report</p>
+                <h2>能力差距分析</h2>
+              </div>
+              <div id="timeline-label" class="target-pill"></div>
+            </div>
+            <div id="gap-report" class="gap-report"></div>
+          </section>
+
+          <section class="workspace-section">
+            <div class="section-heading job-heading">
+              <div>
+                <p class="section-kicker">Open Roles</p>
+                <h2>在招职位</h2>
+              </div>
+              <div class="job-filters">
+                <select id="filter-city" aria-label="城市筛选"></select>
+                <select id="filter-salary" aria-label="薪资筛选">
+                  <option value="0">全部薪资</option>
+                  <option value="15">15k+</option>
+                  <option value="25">25k+</option>
+                  <option value="35">35k+</option>
+                </select>
+                <select id="filter-size" aria-label="公司规模筛选"></select>
+              </div>
+            </div>
+            <div id="jobs-list" class="jobs-list"></div>
+          </section>
+        </section>
+
+        <section id="assessment-view" class="view is-hidden">
+          <section class="assessment-layout">
+            <div class="assessment-intro">
+              <p class="section-kicker">Career Fit Test</p>
+              <h2>职业倾向测评</h2>
+              <p>这是一个独立功能，类似 MBTI 的“倾向类型”判断，但结果会落到真实岗位方向上。它不会强制影响路径规划。</p>
+              <div class="assessment-progress">
+                <span id="assessment-progress">0/8</span>
+                <small>完成后生成类型</small>
+              </div>
+            </div>
+
+            <form id="assessment-form" class="assessment-form">
+              <div id="assessment-questions" class="assessment-questions"></div>
+              <button id="run-assessment" class="primary-button" type="submit">生成测评结果</button>
+            </form>
+          </section>
+
+          <section id="assessment-output" class="assessment-output"></section>
+        </section>
+      </main>
+    </div>
+
+    <datalist id="role-options"></datalist>
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
