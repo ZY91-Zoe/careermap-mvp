@@ -62,11 +62,11 @@ export async function attachJobData(result, input) {
     successfulProviders: [],
     failedProviders: [],
     searchLinks,
-    note: "未配置授权职位数据源，当前展示模拟职位和平台搜索入口。"
+    note: "未配置授权职位数据源，当前展示 AI 生成职位和平台搜索入口。"
   };
 
   if (!configuredProviders.length || process.env.JOB_SOURCE_MODE === "mock") {
-    result.jobs = markFallbackJobs(result.jobs, "模拟数据");
+    result.jobs = markFallbackJobs(result.jobs, "AI 生成");
     result.jobsMeta = sourceMeta;
     return {
       result,
@@ -94,10 +94,10 @@ export async function attachJobData(result, input) {
   });
 
   if (!liveJobs.length) {
-    result.jobs = markFallbackJobs(result.jobs, "模拟兜底");
+    result.jobs = markFallbackJobs(result.jobs, "AI 生成兜底");
     result.jobsMeta = {
       ...sourceMeta,
-      note: "授权职位接口未返回可用数据，当前展示模拟职位和平台搜索入口。"
+      note: "授权职位接口未返回可用数据，当前展示 AI 生成职位和平台搜索入口。"
     };
     return {
       result,
@@ -107,7 +107,7 @@ export async function attachJobData(result, input) {
 
   result.jobs = dedupeJobs(liveJobs)
     .slice(0, 24)
-    .concat(markFallbackJobs(result.jobs, "模拟补充").slice(0, Math.max(0, 8 - liveJobs.length)));
+    .concat(markFallbackJobs(result.jobs, "AI 生成补充").slice(0, Math.max(0, 8 - liveJobs.length)));
   result.jobsMeta = {
     ...sourceMeta,
     mode: "live",

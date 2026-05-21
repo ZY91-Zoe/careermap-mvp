@@ -16,14 +16,43 @@
             <small>职业路径工具</small>
           </div>
         </div>
-        <nav class="feature-nav" aria-label="功能导航">
-          <button class="nav-button is-active" type="button" data-view="planner-view">路径规划</button>
-          <button class="nav-button" type="button" data-view="assessment-view">职业测评</button>
-        </nav>
-        <div class="nav-note">
-          <span>v0.3</span>
-          <p id="backend-status">本地模拟数据</p>
-        </div>
+        <ol class="flow-guide" aria-label="使用流程">
+          <li class="is-active" data-flow-step="profile">
+            <span>1</span>
+            <div>
+              <strong>填写职业档案</strong>
+              <small>岗位、城市、经历与目标</small>
+            </div>
+          </li>
+          <li data-flow-step="path">
+            <span>2</span>
+            <div>
+              <strong>路径地图</strong>
+              <small>纵向晋升与横向迁移</small>
+            </div>
+          </li>
+          <li data-flow-step="gap">
+            <span>3</span>
+            <div>
+              <strong>差距分析</strong>
+              <small>优势、短板和补齐计划</small>
+            </div>
+          </li>
+          <li data-flow-step="jobs">
+            <span>4</span>
+            <div>
+              <strong>在招职位</strong>
+              <small>职位列表与平台搜索入口</small>
+            </div>
+          </li>
+          <li data-flow-step="assessment">
+            <span>5</span>
+            <div>
+              <strong>可选测评</strong>
+              <small>不确定方向时再做</small>
+            </div>
+          </li>
+        </ol>
       </aside>
 
       <main class="main-shell">
@@ -32,7 +61,7 @@
             <p class="eyebrow">Career Intelligence</p>
             <h1>职业路径规划台</h1>
           </div>
-          <p>先用职业档案生成路径；不确定方向时，可单独做职业测评，再把推荐岗位带回规划。</p>
+          <p>先填写职业档案并生成结果，系统会按路径地图、差距分析、在招职位的顺序展示；测评是底部的可选功能。</p>
         </header>
 
         <section id="planner-view" class="view">
@@ -44,7 +73,7 @@
                   <h2>职业档案</h2>
                 </div>
                 <button class="primary-button" type="submit">
-                  <span id="submit-label">生成路径</span>
+                  <span id="submit-label">生成</span>
                 </button>
               </div>
 
@@ -71,7 +100,7 @@
                 </label>
                 <label class="wide-field">
                   目标岗位 <span>选填</span>
-                  <input id="target-role" name="targetRole" list="role-options" autocomplete="off" placeholder="不确定可以留空，系统会先给路径建议">
+                  <input id="target-role" name="targetRole" list="role-options" autocomplete="off" placeholder="没有明确目标可以留空，系统会先给路径建议">
                 </label>
               </div>
 
@@ -96,8 +125,8 @@
               <div class="summary-card">
                 <div>
                   <p class="section-kicker">Overview</p>
-                  <h2 id="summary-title">正在生成职业路径</h2>
-                  <p id="summary-copy" class="summary-copy"></p>
+                  <h2 id="summary-title">填写档案后点击生成</h2>
+                  <p id="summary-copy" class="summary-copy">生成后会先展示路径地图，再继续查看差距分析和在招职位。</p>
                   <div id="profile-signals" class="profile-signals"></div>
                 </div>
                 <div class="score-tile">
@@ -108,66 +137,92 @@
             </section>
           </form>
 
-          <section class="workspace-section path-section">
-            <div class="section-heading">
-              <div>
-                <p class="section-kicker">Path Map</p>
-                <h2>职业路径地图</h2>
-              </div>
-              <div id="active-target" class="target-pill"></div>
+          <section id="result-flow" class="result-flow is-empty" aria-live="polite">
+            <div id="flow-empty" class="flow-empty">
+              <p class="section-kicker">Result Flow</p>
+              <h2>结果会按步骤出现</h2>
+              <p>点击“生成”后，这里会依次展示职业路径地图、能力差距分析和在招职位。</p>
             </div>
-            <div class="path-grid">
-              <div class="path-column">
-                <h3>纵向晋升</h3>
-                <p id="vertical-note" class="path-note"></p>
-                <div id="vertical-path" class="vertical-path"></div>
-              </div>
-              <div class="path-column">
-                <h3>横向迁移</h3>
-                <div id="horizontal-paths" class="horizontal-paths"></div>
-              </div>
-            </div>
-          </section>
 
-          <section class="workspace-section">
-            <div class="section-heading">
-              <div>
-                <p class="section-kicker">Gap Report</p>
-                <h2>能力差距分析</h2>
+            <div id="flow-content" class="flow-content is-hidden">
+              <div class="step-tabs" role="tablist" aria-label="结果步骤">
+                <button class="step-tab is-active" type="button" data-result-step="path">1 路径地图</button>
+                <button class="step-tab" type="button" data-result-step="gap">2 差距分析</button>
+                <button class="step-tab" type="button" data-result-step="jobs">3 在招职位</button>
               </div>
-              <div id="timeline-label" class="target-pill"></div>
-            </div>
-            <div id="gap-report" class="gap-report"></div>
-          </section>
 
-          <section class="workspace-section">
-            <div class="section-heading job-heading">
-              <div>
-                <p class="section-kicker">Open Roles</p>
-                <h2>在招职位</h2>
-              </div>
-              <div class="job-filters">
-                <select id="filter-city" aria-label="城市筛选"></select>
-                <select id="filter-salary" aria-label="薪资筛选">
-                  <option value="0">全部薪资</option>
-                  <option value="15">15k+</option>
-                  <option value="25">25k+</option>
-                  <option value="35">35k+</option>
-                </select>
-                <select id="filter-size" aria-label="公司规模筛选"></select>
-              </div>
+              <section id="path-step" class="workspace-section step-panel is-active" data-step-panel="path">
+                <div class="section-heading">
+                  <div>
+                    <p class="section-kicker">Path Map</p>
+                    <h2>职业路径地图</h2>
+                  </div>
+                  <div id="active-target" class="target-pill"></div>
+                </div>
+                <div class="path-grid">
+                  <div class="path-column">
+                    <h3>纵向晋升</h3>
+                    <p id="vertical-note" class="path-note"></p>
+                    <div id="vertical-path" class="vertical-path"></div>
+                  </div>
+                  <div class="path-column">
+                    <h3>横向迁移</h3>
+                    <div id="horizontal-paths" class="horizontal-paths"></div>
+                  </div>
+                </div>
+                <div class="step-actions">
+                  <button class="secondary-button" type="button" data-result-step="gap">下一步：差距分析</button>
+                </div>
+              </section>
+
+              <section id="gap-step" class="workspace-section step-panel is-hidden" data-step-panel="gap">
+                <div class="section-heading">
+                  <div>
+                    <p class="section-kicker">Gap Report</p>
+                    <h2>能力差距分析</h2>
+                  </div>
+                  <div id="timeline-label" class="target-pill"></div>
+                </div>
+                <div id="gap-report" class="gap-report"></div>
+                <div class="step-actions">
+                  <button class="ghost-button" type="button" data-result-step="path">上一步</button>
+                  <button class="secondary-button" type="button" data-result-step="jobs">下一步：在招职位</button>
+                </div>
+              </section>
+
+              <section id="jobs-step" class="workspace-section step-panel is-hidden" data-step-panel="jobs">
+                <div class="section-heading job-heading">
+                  <div>
+                    <p class="section-kicker">Open Roles</p>
+                    <h2>在招职位</h2>
+                  </div>
+                  <div class="job-filters">
+                    <select id="filter-city" aria-label="城市筛选"></select>
+                    <select id="filter-salary" aria-label="薪资筛选">
+                      <option value="0">全部薪资</option>
+                      <option value="15">15k+</option>
+                      <option value="25">25k+</option>
+                      <option value="35">35k+</option>
+                    </select>
+                    <select id="filter-size" aria-label="公司规模筛选"></select>
+                  </div>
+                </div>
+                <div id="job-source-summary" class="job-source-summary"></div>
+                <div id="jobs-list" class="jobs-list"></div>
+                <div class="step-actions">
+                  <button class="ghost-button" type="button" data-result-step="gap">上一步</button>
+                </div>
+              </section>
             </div>
-            <div id="job-source-summary" class="job-source-summary"></div>
-            <div id="jobs-list" class="jobs-list"></div>
           </section>
         </section>
 
-        <section id="assessment-view" class="view is-hidden">
+        <section id="assessment-view" class="view optional-assessment">
           <section class="assessment-layout">
             <div class="assessment-intro">
-              <p class="section-kicker">Career Fit Test</p>
-              <h2>职业倾向测评</h2>
-              <p>这是一个独立功能，类似 MBTI 的“倾向类型”判断，但结果会落到真实岗位方向上。它不会强制影响路径规划。</p>
+              <p class="section-kicker">Optional Test</p>
+              <h2>职业适配测评</h2>
+              <p>如果用户没有明确目标，可以在这里做一个类似 MBTI 的职业倾向判断。测评结果可一键带回上方路径规划，但不是生成路径的必填项。</p>
               <div class="assessment-progress">
                 <span id="assessment-progress">0/8</span>
                 <small>完成后生成类型</small>

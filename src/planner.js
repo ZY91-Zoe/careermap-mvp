@@ -501,7 +501,7 @@ function buildMockJobs(targetRole, preferredCity, targetProfile) {
       companySize: companySizes[index % companySizes.length],
       deadline,
       applyUrl: `https://example.com/careermap/jobs/${encodeURIComponent(targetRole)}-${index + 1}`,
-      tags: [targetProfile.domain || "目标岗位", index % 2 === 0 ? "成长型团队" : "成熟业务线", "模拟数据"]
+      tags: [targetProfile.domain || "目标岗位", index % 2 === 0 ? "成长型团队" : "成熟业务线", "AI 生成"]
     };
   });
 }

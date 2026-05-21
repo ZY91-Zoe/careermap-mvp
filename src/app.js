@@ -3,8 +3,9 @@ import { assessmentQuestions, buildCareerMap, getDefaultInput, roleOptions } fro
 const state = {
   result: null,
   loading: false,
-  dataMode: "local",
-  educationRows: []
+  dataMode: "simulated-ai",
+  educationRows: [],
+  activeResultStep: "path"
 };
 
 const careerForm = document.querySelector("#career-form");
@@ -17,7 +18,6 @@ const directionInput = document.querySelector("#direction");
 const targetRoleInput = document.querySelector("#target-role");
 const submitButton = careerForm.querySelector("button[type='submit']");
 const submitLabel = document.querySelector("#submit-label");
-const backendStatus = document.querySelector("#backend-status");
 const roleOptionsList = document.querySelector("#role-options");
 const educationList = document.querySelector("#education-list");
 const addEducationButton = document.querySelector("#add-education");
@@ -29,6 +29,12 @@ const summaryCopy = document.querySelector("#summary-copy");
 const profileSignals = document.querySelector("#profile-signals");
 const scoreValue = document.querySelector("#score-value");
 const scoreLabel = document.querySelector("#score-label");
+const resultFlow = document.querySelector("#result-flow");
+const flowEmpty = document.querySelector("#flow-empty");
+const flowContent = document.querySelector("#flow-content");
+const flowGuideItems = [...document.querySelectorAll("[data-flow-step]")];
+const stepTabs = [...document.querySelectorAll(".step-tab[data-result-step]")];
+const stepPanels = [...document.querySelectorAll("[data-step-panel]")];
 const activeTarget = document.querySelector("#active-target");
 const verticalNote = document.querySelector("#vertical-note");
 const verticalPath = document.querySelector("#vertical-path");
@@ -49,7 +55,7 @@ function init() {
   renderAssessmentQuestions();
   fillForm(defaults);
   bindEvents();
-  generatePlan();
+  renderPlanner();
 }
 
 function bindEvents() {
@@ -77,22 +83,25 @@ function bindEvents() {
     if (!button) return;
     const index = Number(button.dataset.removeEducation);
     state.educationRows.splice(index, 1);
-    if (!state.educationRows.length) state.educationRows.push({ degree: "", school: "", major: "", period: "" });
+    if (!state.educationRows.length) {
+      state.educationRows.push({ degree: "", school: "", major: "", period: "" });
+    }
     renderEducationRows();
   });
 
   educationList.addEventListener("input", syncEducationRowsFromDom);
 
-  document.querySelectorAll("[data-view]").forEach((button) => {
-    button.addEventListener("click", () => switchView(button.dataset.view));
-  });
-
   document.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-target-role]");
-    if (!button) return;
-    targetRoleInput.value = button.dataset.targetRole;
-    switchView("planner-view");
-    generatePlan({ targetRole: button.dataset.targetRole });
+    const roleButton = event.target.closest("[data-target-role]");
+    if (roleButton) {
+      targetRoleInput.value = roleButton.dataset.targetRole;
+      generatePlan({ targetRole: roleButton.dataset.targetRole });
+      return;
+    }
+
+    const stepButton = event.target.closest("[data-result-step]");
+    if (!stepButton || !state.result) return;
+    setActiveResultStep(stepButton.dataset.resultStep, true);
   });
 
   [filterCity, filterSalary, filterSize].forEach((control) => {
@@ -107,7 +116,9 @@ function fillForm(input) {
   experienceInput.value = input.experience;
   directionInput.value = input.direction;
   targetRoleInput.value = input.targetRole;
-  state.educationRows = input.educationHistory?.length ? structuredClone(input.educationHistory) : [{ degree: "", school: "", major: "", period: "" }];
+  state.educationRows = input.educationHistory?.length
+    ? structuredClone(input.educationHistory)
+    : [{ degree: "", school: "", major: "", period: "" }];
   renderEducationRows();
   renderAssessmentProgress();
 }
@@ -161,34 +172,85 @@ async function generatePlan(overrides = {}) {
     state.dataMode = payload.dataMode || "simulated-ai";
   } catch {
     state.result = buildCareerMap(input);
-    state.dataMode = "local-fallback";
+    state.dataMode = "simulated-ai";
   } finally {
+    state.activeResultStep = "path";
     setLoading(false);
     renderPlanner();
+    resultFlow.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 }
 
 function runAssessment() {
   const assessment = collectAssessment();
   const result = buildCareerMap(collectInput({ targetRole: "", assessment }));
+  renderFlowGuide("assessment");
   renderAssessmentOutput(result.assessment);
 }
 
 function setLoading(isLoading) {
   state.loading = isLoading;
   submitButton.disabled = isLoading;
-  submitLabel.textContent = isLoading ? "生成中..." : "生成路径";
+  submitLabel.textContent = isLoading ? "生成中..." : "生成";
 }
 
 function renderPlanner() {
-  if (!state.result) return;
+  if (!state.result) {
+    renderInitialPlanner();
+    renderResultFlow(false);
+    return;
+  }
+
   renderSummary();
   renderPaths();
   renderGapReport();
   renderJobFilters();
   renderJobSourceSummary();
   renderJobs();
-  backendStatus.textContent = state.dataMode === "simulated-ai" ? "结构化模拟 AI" : "本地生成器";
+  renderResultFlow(true);
+}
+
+function renderInitialPlanner() {
+  summaryTitle.textContent = "填写档案后点击生成";
+  summaryCopy.textContent = "生成后会先展示路径地图，再继续查看差距分析和在招职位。";
+  scoreValue.textContent = "--";
+  scoreLabel.textContent = "匹配度";
+  profileSignals.innerHTML = `<span>目标岗位、学历和工作经历都可以选填</span>`;
+}
+
+function renderResultFlow(hasContent) {
+  resultFlow.classList.toggle("is-empty", !hasContent);
+  flowEmpty.classList.toggle("is-hidden", hasContent);
+  flowContent.classList.toggle("is-hidden", !hasContent);
+  renderFlowGuide(hasContent ? state.activeResultStep : "profile");
+  if (!hasContent) return;
+
+  stepTabs.forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.resultStep === state.activeResultStep);
+  });
+  stepPanels.forEach((panel) => {
+    const isActive = panel.dataset.stepPanel === state.activeResultStep;
+    panel.classList.toggle("is-active", isActive);
+    panel.classList.toggle("is-hidden", !isActive);
+  });
+}
+
+function renderFlowGuide(activeStep) {
+  flowGuideItems.forEach((item) => {
+    item.classList.toggle("is-active", item.dataset.flowStep === activeStep);
+  });
+}
+
+function setActiveResultStep(step, shouldScroll = false) {
+  if (!["path", "gap", "jobs"].includes(step)) return;
+  state.activeResultStep = step;
+  renderResultFlow(Boolean(state.result));
+  if (shouldScroll) {
+    document.querySelector(`[data-step-panel="${step}"]`)?.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }
 }
 
 function renderSummary() {
@@ -420,21 +482,24 @@ function renderJobFilters() {
 function renderJobSourceSummary() {
   const meta = state.result.jobsMeta || {
     mode: "mock",
-    note: "当前为本地生成的模拟职位。",
+    note: "当前展示 AI 生成职位，并提供平台搜索入口。",
     configuredProviders: [],
     successfulProviders: [],
     failedProviders: [],
     searchLinks: []
   };
-  const statusLabel = meta.mode === "live" ? "真实数据已接入" : "未接入真实数据";
-  const configured = meta.configuredProviders?.length ? `已配置：${meta.configuredProviders.join("、")}` : "未配置授权 API";
+  const statusLabel = meta.mode === "live" ? "已接入授权职位" : "AI 生成职位";
+  const configured = meta.configuredProviders?.length ? `已配置：${meta.configuredProviders.join("、")}` : "可配置授权职位 API 后替换";
   const successful = meta.successfulProviders?.length ? `已返回：${meta.successfulProviders.join("、")}` : "";
   const failed = meta.failedProviders?.length ? `异常：${meta.failedProviders.map((item) => item.provider).join("、")}` : "";
+  const sourceNote = meta.mode === "live"
+    ? meta.note
+    : "当前先展示结构化生成职位，同时保留 Boss直聘、猎聘、51job、LinkedIn 的搜索入口。";
 
   jobSourceSummary.innerHTML = `
     <div>
       <strong>${h(statusLabel)}</strong>
-      <p>${h(meta.note || "")}</p>
+      <p>${h(sourceNote || "")}</p>
       <small>${h([configured, successful, failed].filter(Boolean).join(" · "))}</small>
     </div>
     <div class="source-links">
@@ -452,7 +517,7 @@ function renderJobs() {
   const size = filterSize.value || "all";
   const jobs = state.result.jobs.filter((job) => {
     const cityMatch = city === "all" || job.city === city;
-    const salaryMatch = !minSalary || job.salaryMax >= minSalary;
+    const salaryMatch = !minSalary || job.salaryMax >= minSalary || !job.salaryMax;
     const sizeMatch = size === "all" || job.companySize === size;
     return cityMatch && salaryMatch && sizeMatch;
   });
@@ -460,7 +525,7 @@ function renderJobs() {
   jobsList.innerHTML = jobs.length ? jobs.map((job) => `
     <article class="job-card">
       <div>
-        <p class="stage-label">${h(job.city)} · ${h(job.companySize)} · ${h(job.sourceName || "模拟数据")}</p>
+        <p class="stage-label">${h(job.city)} · ${h(job.companySize)} · ${h(job.sourceName || "AI 生成")}</p>
         <h4>${h(job.title)}</h4>
         <p>${h(job.company)}</p>
       </div>
@@ -474,15 +539,6 @@ function renderJobs() {
       <a class="secondary-button" href="${h(job.applyUrl)}" target="_blank" rel="noreferrer">查看职位</a>
     </article>
   `).join("") : `<p class="empty-note">当前筛选下没有职位，调整城市、薪资或公司规模后再看。</p>`;
-}
-
-function switchView(viewId) {
-  document.querySelectorAll(".view").forEach((view) => {
-    view.classList.toggle("is-hidden", view.id !== viewId);
-  });
-  document.querySelectorAll("[data-view]").forEach((button) => {
-    button.classList.toggle("is-active", button.dataset.view === viewId);
-  });
 }
 
 function renderRoleOptions() {

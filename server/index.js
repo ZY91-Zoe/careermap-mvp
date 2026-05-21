@@ -30,7 +30,7 @@ const server = http.createServer(async (request, response) => {
       return sendJson(response, 200, {
         ok: true,
         service: "careermap-mvp",
-        version: "0.4.0",
+        version: "0.5.0",
         aiProviderConfigured: Boolean(process.env.OPENAI_API_KEY || process.env.CLAUDE_API_KEY),
         jobSources: getJobSourceHealth(),
         dataMode: "simulated-ai",
