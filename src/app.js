@@ -390,22 +390,55 @@ function renderPaths() {
     </article>
   `).join("");
 
-  horizontalPaths.innerHTML = state.result.horizontalPaths.map((path) => `
-    <article class="role-card">
-      <div class="role-card-top">
+  const tiers = state.result.horizontalPathTiers?.length
+    ? state.result.horizontalPathTiers
+    : [{
+        id: "near",
+        label: "近迁移",
+        horizon: "1年内可转",
+        summary: "技能重叠度高。",
+        roles: state.result.horizontalPaths
+      }];
+
+  horizontalPaths.innerHTML = tiers.map((tier) => `
+    <section class="migration-tier ${h(tier.id)}">
+      <div class="migration-tier-heading">
+        <span class="tier-dot ${h(tier.dotClass || `is-${tier.id}`)}"></span>
         <div>
-          <p class="stage-label">迁移难度：${h(path.difficulty)}</p>
-          <h4>${h(path.role)}</h4>
+          <h4>${h(tier.label)} · ${h(tier.horizon)}</h4>
+          <p>${h(tier.summary)}</p>
         </div>
-        <span class="difficulty ${difficultyClass(path.difficulty)}">${h(path.difficulty)}</span>
       </div>
-      <p>${h(path.fitReason)}</p>
-      <p class="muted">${h(path.salaryRange)} · ${h(path.companyTypes.slice(0, 2).join(" / "))}</p>
-      <div class="mini-tags">
-        ${path.transferSignals.map((item) => `<span>${h(item)}</span>`).join("")}
+      <div class="migration-role-grid">
+        ${tier.roles.map((path) => `
+          <article class="role-card migration-card">
+            <div class="role-card-top">
+              <div>
+                <p class="stage-label">${h(path.tierLabel || tier.label)}</p>
+                <h4>${h(path.role)}</h4>
+              </div>
+              <span class="fit-score">${h(path.fitScore || "")}</span>
+            </div>
+            <p class="muted">${h(path.salaryRange)} · ${h(path.companyTypes.slice(0, 2).join(" / "))}</p>
+            <p>${h(path.fitReason)}</p>
+            <div class="signal-row">
+              <strong>可迁移</strong>
+              <div class="mini-tags">
+                ${path.transferSignals.map((item) => `<span>${h(item)}</span>`).join("")}
+              </div>
+            </div>
+            <div class="signal-row is-gap">
+              <strong>需补</strong>
+              <div class="mini-tags">
+                ${path.missingSignals.map((item) => `<span>${h(item)}</span>`).join("")}
+              </div>
+            </div>
+            <p class="case-signal">${h(path.caseSignal || "")}</p>
+            <button type="button" class="secondary-button" data-target-role="${h(path.role)}">分析差距</button>
+          </article>
+        `).join("")}
       </div>
-      <button type="button" class="secondary-button" data-target-role="${h(path.role)}">分析差距</button>
-    </article>
+    </section>
   `).join("");
 }
 

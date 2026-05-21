@@ -34,6 +34,20 @@ if (result.horizontalPaths.length < 3) {
   throw new Error("Expected at least three horizontal paths.");
 }
 
+if (!Array.isArray(result.horizontalPathTiers) || result.horizontalPathTiers.length !== 3) {
+  throw new Error("Expected near/mid/far horizontal migration tiers.");
+}
+
+for (const tier of result.horizontalPathTiers) {
+  if (tier.roles.length < 3 || tier.roles.length > 5) {
+    throw new Error(`Expected 3-5 roles in ${tier.label}.`);
+  }
+}
+
+if (!result.horizontalPathTiers.find((tier) => tier.id === "far")?.roles.some((role) => role.caseSignal)) {
+  throw new Error("Expected far migration roles with case signals.");
+}
+
 if (result.summary.targetSource !== "path") {
   throw new Error("Expected target role to be selected from path when user leaves it blank.");
 }
@@ -77,6 +91,7 @@ console.log(JSON.stringify({
   readinessScore: result.gapAnalysis.readinessScore,
   verticalStages: result.verticalPath.length,
   horizontalPaths: result.horizontalPaths.length,
+  horizontalTiers: result.horizontalPathTiers.map((tier) => `${tier.label}:${tier.roles.length}`),
   jobs: enhancedResult.jobs.length,
   jobMode: enhancedResult.jobsMeta.mode,
   jobSearchLinks: enhancedResult.jobsMeta.searchLinks.map((item) => item.name)

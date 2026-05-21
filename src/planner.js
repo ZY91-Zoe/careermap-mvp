@@ -147,7 +147,21 @@ const roleRequirements = {
   人力资源专员: ["候选人沟通", "面试协调", "组织流程", "数据台账", "制度执行", "沟通协调"],
   项目经理: ["项目计划", "风险管理", "跨部门沟通", "进度推进", "资源协调", "复盘沉淀"],
   行政主管: ["流程优化", "供应商管理", "预算管理", "跨部门协同", "制度建设", "团队管理"],
-  商务分析师: ["数据分析", "销售流程", "业务理解", "报告表达", "指标体系", "沟通协调"]
+  商务分析师: ["数据分析", "销售流程", "业务理解", "报告表达", "指标体系", "沟通协调"],
+  活动策划经理: ["活动策划", "项目推进", "供应商管理", "预算管理", "资源协调", "效果复盘"],
+  销售运营经理: ["销售流程", "数据报表", "CRM 管理", "业绩分析", "流程优化", "跨部门协同"],
+  产品运营经理: ["用户洞察", "活动策划", "数据分析", "项目推进", "产品理解", "效果复盘"],
+  品牌内容运营: ["内容策划", "品牌理解", "用户洞察", "渠道策略", "数据复盘", "创意表达"],
+  政企客户经理: ["客户沟通", "解决方案设计", "商务推进", "高层沟通", "资源协调", "业务理解"],
+  解决方案顾问: ["需求理解", "解决方案设计", "行业理解", "项目推进", "报告表达", "客户沟通"],
+  企业培训经理: ["课程设计", "组织诊断", "表达呈现", "项目推进", "沟通协调", "复盘沉淀"],
+  供应链运营经理: ["流程优化", "供应商管理", "数据分析", "成本意识", "项目推进", "风险管理"],
+  独立内容创作者: ["内容策划", "用户洞察", "商业化意识", "自媒体运营", "选题能力", "复盘迭代"],
+  创业公司COO助理: ["综合管理", "经营分析", "流程搭建", "资源协调", "商业判断", "项目推进"],
+  管理咨询顾问: ["问题诊断", "数据分析", "报告表达", "行业研究", "访谈调研", "方案设计"],
+  数字化转型顾问: ["业务理解", "流程优化", "需求分析", "项目推进", "数据分析", "变革管理"],
+  公共事务经理: ["政策理解", "外部沟通", "项目推进", "公文写作", "资源协调", "风险意识"],
+  社群主理人: ["用户运营", "内容策划", "活动策划", "社群运营", "商业化意识", "数据复盘"]
 };
 
 const capabilityLibrary = {
@@ -200,7 +214,191 @@ const directionLabels = {
   unsure: "还不确定"
 };
 
-export const roleOptions = Object.keys(roleProfiles);
+const migrationTierDefinitions = [
+  {
+    id: "near",
+    label: "近迁移",
+    horizon: "1年内可转",
+    summary: "技能重叠度高，可先用现有经验换岗位场景。",
+    dotClass: "is-near"
+  },
+  {
+    id: "mid",
+    label: "中迁移",
+    horizon: "1-2年可转",
+    summary: "需要补充 1-2 个新技能，适合用项目作品过渡。",
+    dotClass: "is-mid"
+  },
+  {
+    id: "far",
+    label: "远迁移",
+    horizon: "2-3年可转",
+    summary: "跨度较大但有案例可循，需要明确作品、证书或行业入口。",
+    dotClass: "is-far"
+  }
+];
+
+const transformationRolePool = [
+  {
+    role: "活动策划经理",
+    tier: "near",
+    baseSalary: [15, 28],
+    companyTypes: ["品牌/市场部", "会展公司", "消费品公司"],
+    bridgeSkills: ["会议组织", "资源协调", "项目推进"],
+    newSkills: ["活动预算", "传播复盘"],
+    caseSignal: "大型会议、年会或跨部门活动可包装成活动策划项目案例。"
+  },
+  {
+    role: "客户成功经理",
+    tier: "near",
+    baseSalary: [16, 30],
+    companyTypes: ["互联网/SaaS", "企业服务", "教育科技"],
+    bridgeSkills: ["沟通协调", "项目推进", "需求理解"],
+    newSkills: ["客户健康度", "续约意识"],
+    caseSignal: "把内部协同经验转成客户推进、需求澄清和交付跟进案例。"
+  },
+  {
+    role: "项目经理",
+    tier: "near",
+    baseSalary: [16, 32],
+    companyTypes: ["互联网", "制造业数字化", "咨询交付"],
+    bridgeSkills: ["资源协调", "项目推进", "风险管理"],
+    newSkills: ["项目计划", "里程碑管理"],
+    caseSignal: "跨部门专项、制度上线或流程改造都能转成项目管理作品。"
+  },
+  {
+    role: "销售运营经理",
+    tier: "near",
+    baseSalary: [14, 28],
+    companyTypes: ["B2B 公司", "SaaS 公司", "渠道团队"],
+    bridgeSkills: ["流程优化", "数据报表", "跨部门协同"],
+    newSkills: ["CRM 管理", "销售漏斗"],
+    caseSignal: "用流程、台账、报表经验切入销售效率提升。"
+  },
+  {
+    role: "产品运营经理",
+    tier: "near",
+    baseSalary: [16, 30],
+    companyTypes: ["互联网平台", "工具产品", "内容社区"],
+    bridgeSkills: ["项目推进", "数据复盘", "用户沟通"],
+    newSkills: ["产品理解", "用户分层"],
+    caseSignal: "把流程优化和用户反馈整理成产品运营实验。"
+  },
+  {
+    role: "品牌内容运营",
+    tier: "mid",
+    baseSalary: [15, 26],
+    companyTypes: ["消费品牌", "媒体/内容公司", "企业品牌部"],
+    bridgeSkills: ["公文写作", "内容策划", "沟通协调"],
+    newSkills: ["平台运营", "内容数据复盘"],
+    caseSignal: "材料写作能力可转成品牌表达，但需要补平台和用户语感。"
+  },
+  {
+    role: "人力资源经理",
+    tier: "mid",
+    baseSalary: [18, 35],
+    companyTypes: ["集团职能", "成长型企业", "人力服务公司"],
+    bridgeSkills: ["组织流程", "沟通协调", "制度建设"],
+    newSkills: ["HR 专业知识", "招聘/绩效项目"],
+    caseSignal: "综合管理经验可进入组织流程、人效项目和员工体验方向。"
+  },
+  {
+    role: "政企客户经理",
+    tier: "mid",
+    baseSalary: [18, 38],
+    companyTypes: ["科技公司", "政企服务商", "解决方案团队"],
+    bridgeSkills: ["高层沟通", "资源协调", "公文写作"],
+    newSkills: ["行业方案", "商务推进"],
+    caseSignal: "熟悉正式沟通、材料和多方协调的人，适合切入政企客户场景。"
+  },
+  {
+    role: "解决方案顾问",
+    tier: "mid",
+    baseSalary: [20, 42],
+    companyTypes: ["SaaS 公司", "咨询交付", "企业服务"],
+    bridgeSkills: ["需求理解", "项目推进", "报告表达"],
+    newSkills: ["方案书", "行业方法论"],
+    caseSignal: "把内部问题诊断写成方案，逐步迁移到客户侧解决方案。"
+  },
+  {
+    role: "企业培训经理",
+    tier: "mid",
+    baseSalary: [15, 30],
+    companyTypes: ["企业大学", "培训机构", "组织发展团队"],
+    bridgeSkills: ["会议组织", "表达呈现", "复盘沉淀"],
+    newSkills: ["课程设计", "组织诊断"],
+    caseSignal: "会议培训、制度宣贯和新人带教可沉淀为课程作品。"
+  },
+  {
+    role: "供应链运营经理",
+    tier: "mid",
+    baseSalary: [18, 34],
+    companyTypes: ["制造业", "零售电商", "物流供应链"],
+    bridgeSkills: ["供应商管理", "流程优化", "预算管理"],
+    newSkills: ["成本模型", "履约指标"],
+    caseSignal: "采购、供应商和流程管理经验可迁移到供应链运营。"
+  },
+  {
+    role: "独立内容创作者",
+    tier: "far",
+    baseSalary: [12, 40],
+    companyTypes: ["自媒体", "知识付费", "垂直社区"],
+    bridgeSkills: ["公文写作", "内容策划", "复盘沉淀"],
+    newSkills: ["平台运营", "变现路径"],
+    caseSignal: "有行政、管理、职场经验的人可以从垂直职场内容切入。"
+  },
+  {
+    role: "创业公司COO助理",
+    tier: "far",
+    baseSalary: [20, 40],
+    companyTypes: ["早期创业公司", "本地生活", "企业服务"],
+    bridgeSkills: ["综合管理", "资源协调", "项目推进"],
+    newSkills: ["经营指标", "业务判断"],
+    caseSignal: "综合管理型人才常从创始人助理/COO 助理进入业务运营核心。"
+  },
+  {
+    role: "管理咨询顾问",
+    tier: "far",
+    baseSalary: [22, 45],
+    companyTypes: ["咨询公司", "战略研究", "组织变革团队"],
+    bridgeSkills: ["报告表达", "访谈调研", "问题诊断"],
+    newSkills: ["行业研究", "数据建模"],
+    caseSignal: "需要作品集：行业研究、问题诊断报告和项目复盘。"
+  },
+  {
+    role: "数字化转型顾问",
+    tier: "far",
+    baseSalary: [24, 48],
+    companyTypes: ["软件服务商", "咨询交付", "传统企业数字化部"],
+    bridgeSkills: ["流程优化", "需求分析", "项目推进"],
+    newSkills: ["系统方案", "变革管理"],
+    caseSignal: "从流程 SOP、系统上线或数字化项目旁路切入。"
+  },
+  {
+    role: "公共事务经理",
+    tier: "far",
+    baseSalary: [18, 36],
+    companyTypes: ["平台企业", "医药/能源", "社会组织"],
+    bridgeSkills: ["公文写作", "外部沟通", "资源协调"],
+    newSkills: ["政策理解", "议题管理"],
+    caseSignal: "正式材料、外部协调和政策敏感度是可迁移入口。"
+  },
+  {
+    role: "社群主理人",
+    tier: "far",
+    baseSalary: [12, 32],
+    companyTypes: ["知识社区", "消费品牌", "个人业务"],
+    bridgeSkills: ["活动策划", "用户运营", "内容策划"],
+    newSkills: ["商业化意识", "私域运营"],
+    caseSignal: "适合从副业项目、垂直社群或训练营运营开始验证。"
+  }
+];
+
+export const roleOptions = unique([
+  ...Object.keys(roleProfiles),
+  ...Object.values(roleProfiles).flatMap((profile) => profile.adjacent),
+  ...transformationRolePool.map((item) => item.role)
+]);
 
 export const assessmentQuestions = [
   {
@@ -310,7 +508,8 @@ export function buildCareerMap(rawInput = {}) {
   const currentProfile = inferRoleProfile(input.currentRole);
   const evidence = buildUserEvidence(input);
   const verticalPath = buildVerticalPath(currentProfile, input.city, evidence);
-  const horizontalPaths = buildHorizontalPaths(currentProfile, input.city, evidence);
+  const horizontalPathTiers = buildHorizontalPathTiers(currentProfile, input.city, evidence, input);
+  const horizontalPaths = horizontalPathTiers.flatMap((tier) => tier.roles);
   const assessment = buildAssessmentResult(input, currentProfile);
   const targetRole = chooseTargetRole(input, verticalPath, horizontalPaths);
   const targetProfile = inferRoleProfile(targetRole);
@@ -332,6 +531,7 @@ export function buildCareerMap(rawInput = {}) {
     },
     verticalPath,
     verticalNote: currentProfile.verticalNote || "",
+    horizontalPathTiers,
     horizontalPaths,
     assessment,
     gapAnalysis,
@@ -382,24 +582,64 @@ function buildVerticalPath(profile, city, evidence) {
   }));
 }
 
-function buildHorizontalPaths(profile, city, evidence) {
-  return profile.adjacent.slice(0, 5).map((role, index) => {
-    const requirements = getRequirements(role);
-    const shared = getSharedSkills([...profile.coreSkills, ...evidence.skills], requirements);
-    const difficulty = getDifficulty(shared.length, index);
-    const targetProfile = inferRoleProfile(role);
+function buildHorizontalPathTiers(profile, city, evidence, input) {
+  const sourceSkills = enrichCurrentSkills([...profile.coreSkills, ...evidence.skills], input.years);
+
+  return migrationTierDefinitions.map((tier) => {
+    const roles = transformationRolePool
+      .filter((candidate) => candidate.tier === tier.id)
+      .map((candidate, index) => buildMigrationCandidate(candidate, tier, profile, city, sourceSkills, index))
+      .sort((left, right) => right.fitScore - left.fitScore)
+      .slice(0, 5);
 
     return {
-      id: `h-${index}`,
-      role,
-      difficulty,
-      salaryRange: formatSalaryRange(adjustSalary(getBaseSalary(targetProfile, role), city, index)),
-      companyTypes: targetProfile.companyTypes || profile.companyTypes,
-      fitReason: buildFitReason(profile, role, shared, difficulty),
-      transferSignals: shared.length ? shared.slice(0, 3) : profile.coreSkills.slice(0, 3),
-      missingSignals: requirements.filter((skill) => !isSkillCovered(skill, [...profile.coreSkills, ...evidence.skills])).slice(0, 3)
+      ...tier,
+      roles
     };
   });
+}
+
+function buildMigrationCandidate(candidate, tier, profile, city, sourceSkills, index) {
+  const requirements = getRequirements(candidate.role);
+  const shared = unique([
+    ...getSharedSkills(sourceSkills, requirements),
+    ...candidate.bridgeSkills.filter((skill) => isSkillCovered(skill, sourceSkills) || sourceSkills.includes(skill))
+  ]);
+  const transferSignals = unique([...shared, ...candidate.bridgeSkills]).slice(0, 3);
+  const missingSignals = unique([
+    ...candidate.newSkills,
+    ...requirements.filter((skill) => !isSkillCovered(skill, sourceSkills))
+  ]).slice(0, tier.id === "near" ? 2 : 3);
+  const fitScore = getMigrationFitScore(tier.id, shared.length, missingSignals.length, profile, candidate);
+
+  return {
+    id: `${tier.id}-${index}`,
+    role: candidate.role,
+    tierId: tier.id,
+    tierLabel: tier.label,
+    difficulty: tier.label,
+    timeframe: tier.horizon,
+    fitScore,
+    salaryRange: formatSalaryRange(adjustSalary(candidate.baseSalary, city, index)),
+    companyTypes: candidate.companyTypes,
+    fitReason: buildMigrationFitReason(profile, candidate, transferSignals, tier),
+    transferSignals,
+    missingSignals,
+    caseSignal: candidate.caseSignal
+  };
+}
+
+function getMigrationFitScore(tierId, sharedCount, missingCount, profile, candidate) {
+  const tierBase = tierId === "near" ? 76 : tierId === "mid" ? 64 : 52;
+  const domainBoost = candidate.companyTypes.some((type) => profile.companyTypes.some((source) => source.includes(type) || type.includes(source)))
+    ? 4
+    : 0;
+  return clamp(tierBase + sharedCount * 5 + domainBoost - Math.max(0, missingCount - 2) * 2, 45, 88);
+}
+
+function buildMigrationFitReason(profile, candidate, transferSignals, tier) {
+  const bridge = transferSignals.slice(0, 2).join("、") || profile.coreSkills.slice(0, 2).join("、");
+  return `${profile.name} 的 ${bridge} 可作为入口，${tier.summary}`;
 }
 
 function chooseTargetRole(input, verticalPath, horizontalPaths) {
