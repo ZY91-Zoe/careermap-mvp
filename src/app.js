@@ -36,6 +36,7 @@ const horizontalPaths = document.querySelector("#horizontal-paths");
 const gapReport = document.querySelector("#gap-report");
 const timelineLabel = document.querySelector("#timeline-label");
 const jobsList = document.querySelector("#jobs-list");
+const jobSourceSummary = document.querySelector("#job-source-summary");
 const filterCity = document.querySelector("#filter-city");
 const filterSalary = document.querySelector("#filter-salary");
 const filterSize = document.querySelector("#filter-size");
@@ -185,6 +186,7 @@ function renderPlanner() {
   renderPaths();
   renderGapReport();
   renderJobFilters();
+  renderJobSourceSummary();
   renderJobs();
   backendStatus.textContent = state.dataMode === "simulated-ai" ? "结构化模拟 AI" : "本地生成器";
 }
@@ -415,6 +417,34 @@ function renderJobFilters() {
   filterSize.value = sizes.includes(currentSize) ? currentSize : "all";
 }
 
+function renderJobSourceSummary() {
+  const meta = state.result.jobsMeta || {
+    mode: "mock",
+    note: "当前为本地生成的模拟职位。",
+    configuredProviders: [],
+    successfulProviders: [],
+    failedProviders: [],
+    searchLinks: []
+  };
+  const statusLabel = meta.mode === "live" ? "真实数据已接入" : "未接入真实数据";
+  const configured = meta.configuredProviders?.length ? `已配置：${meta.configuredProviders.join("、")}` : "未配置授权 API";
+  const successful = meta.successfulProviders?.length ? `已返回：${meta.successfulProviders.join("、")}` : "";
+  const failed = meta.failedProviders?.length ? `异常：${meta.failedProviders.map((item) => item.provider).join("、")}` : "";
+
+  jobSourceSummary.innerHTML = `
+    <div>
+      <strong>${h(statusLabel)}</strong>
+      <p>${h(meta.note || "")}</p>
+      <small>${h([configured, successful, failed].filter(Boolean).join(" · "))}</small>
+    </div>
+    <div class="source-links">
+      ${(meta.searchLinks || []).map((link) => `
+        <a href="${h(link.url)}" target="_blank" rel="noreferrer">${h(link.name)}</a>
+      `).join("")}
+    </div>
+  `;
+}
+
 function renderJobs() {
   if (!state.result) return;
   const city = filterCity.value || "all";
@@ -430,7 +460,7 @@ function renderJobs() {
   jobsList.innerHTML = jobs.length ? jobs.map((job) => `
     <article class="job-card">
       <div>
-        <p class="stage-label">${h(job.city)} · ${h(job.companySize)}</p>
+        <p class="stage-label">${h(job.city)} · ${h(job.companySize)} · ${h(job.sourceName || "模拟数据")}</p>
         <h4>${h(job.title)}</h4>
         <p>${h(job.company)}</p>
       </div>

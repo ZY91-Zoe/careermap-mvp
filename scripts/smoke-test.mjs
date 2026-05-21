@@ -1,4 +1,5 @@
 import { buildCareerMap } from "../src/planner.js";
+import { attachJobData } from "../server/services/jobs.js";
 
 const input = {
   currentRole: "办公室主任",
@@ -14,6 +15,8 @@ const input = {
 };
 
 const result = buildCareerMap(input);
+const jobEnhanced = await attachJobData(result, input);
+const enhancedResult = jobEnhanced.result;
 
 if (result.dataMode !== "simulated-ai") {
   throw new Error("Expected simulated-ai data mode.");
@@ -39,8 +42,12 @@ if (!result.gapAnalysis.gaps.length || !result.gapAnalysis.strengths.length) {
   throw new Error("Expected gap analysis with strengths and gaps.");
 }
 
-if (result.jobs.length < 6 || result.jobs.some((job) => !job.applyUrl || !job.salaryRange)) {
+if (enhancedResult.jobs.length < 6 || enhancedResult.jobs.some((job) => !job.applyUrl || !job.salaryRange)) {
   throw new Error("Expected structured mock jobs.");
+}
+
+if (!enhancedResult.jobsMeta || !enhancedResult.jobsMeta.searchLinks.length) {
+  throw new Error("Expected job source metadata and platform search links.");
 }
 
 const assessmentResult = buildCareerMap({
@@ -70,5 +77,7 @@ console.log(JSON.stringify({
   readinessScore: result.gapAnalysis.readinessScore,
   verticalStages: result.verticalPath.length,
   horizontalPaths: result.horizontalPaths.length,
-  jobs: result.jobs.length
+  jobs: enhancedResult.jobs.length,
+  jobMode: enhancedResult.jobsMeta.mode,
+  jobSearchLinks: enhancedResult.jobsMeta.searchLinks.map((item) => item.name)
 }, null, 2));

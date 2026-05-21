@@ -4,6 +4,7 @@ import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { buildCareerMap, normalizeCareerInput } from "../src/planner.js";
+import { attachJobData, getJobSourceHealth } from "./services/jobs.js";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const projectRoot = resolve(__dirname, "..");
@@ -29,8 +30,9 @@ const server = http.createServer(async (request, response) => {
       return sendJson(response, 200, {
         ok: true,
         service: "careermap-mvp",
-        version: "0.3.0",
+        version: "0.4.0",
         aiProviderConfigured: Boolean(process.env.OPENAI_API_KEY || process.env.CLAUDE_API_KEY),
+        jobSources: getJobSourceHealth(),
         dataMode: "simulated-ai",
         timestamp: new Date().toISOString()
       });
@@ -42,15 +44,17 @@ const server = http.createServer(async (request, response) => {
 
       const input = normalizeCareerInput(body);
       const result = buildCareerMap(input);
+      const jobData = await attachJobData(result, input);
 
       return sendJson(response, 200, {
         ok: true,
         generatedAt: new Date().toISOString(),
         dataMode: "simulated-ai",
         warnings: [
-          "MVP uses deterministic structured mock generation. The API shape is ready for a real LLM provider."
+          "MVP uses deterministic structured career generation. The API shape is ready for a real LLM provider.",
+          ...jobData.warnings
         ],
-        result
+        result: jobData.result
       });
     }
 

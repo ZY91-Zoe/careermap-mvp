@@ -1,13 +1,13 @@
 {
   "name": "careermap-mvp",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "description": "A deployable MVP for career path mapping, skill gap analysis, and mock job aggregation.",
   "type": "module",
   "scripts": {
     "start": "node server/index.js",
     "dev": "node server/index.js",
-    "check": "node --check server/index.js && node --check src/app.js && node --check src/planner.js && node --check scripts/smoke-test.mjs",
+    "check": "node --check server/index.js && node --check server/services/jobs.js && node --check src/app.js && node --check src/planner.js && node --check scripts/smoke-test.mjs",
     "smoke": "node scripts/smoke-test.mjs"
   },
   "keywords": [
