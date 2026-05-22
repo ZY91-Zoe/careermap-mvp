@@ -688,9 +688,9 @@ function buildGapAnalysis(input, currentProfile, targetRole, targetProfile, evid
 function buildGapItem(skill, targetRole, index) {
   const detail = capabilityLibrary[skill] || [
     index < 2 ? "高" : "中",
-    `${targetRole} 通常需要更系统的 ${skill} 能力。`,
-    `围绕 ${skill} 找一门实战型课程或行业案例拆解`,
-    `完成一个能证明 ${skill} 的小项目并写成作品集条目`
+    `${targetRole}通常需要更系统的${skill}能力。`,
+    `围绕${skill}找一门实战型课程或行业案例拆解`,
+    `完成一个能证明${skill}能力的小项目，并写成作品集条目`
   ];
 
   return {
@@ -713,9 +713,9 @@ function buildTimeline(score, gapCount, targetRole) {
     optimistic: fast,
     normal,
     checkpoints: [
-      `第 1 阶段：补齐 ${Math.min(gapCount, 2)} 个最高优先级能力，并输出可展示材料。`,
-      `第 2 阶段：完成 1 个贴近 ${targetRole} 的完整项目案例。`,
-      "第 3 阶段：用目标岗位 JD 反查简历素材，开始小范围投递。"
+      `第1阶段：补齐${Math.min(gapCount, 2)}个最高优先级能力，并输出可展示材料。`,
+      `第2阶段：完成1个贴近${targetRole}的完整项目案例。`,
+      "第3阶段：用目标岗位 JD 反查简历素材，开始小范围投递。"
     ]
   };
 }

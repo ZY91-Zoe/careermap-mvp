@@ -5,7 +5,9 @@ const state = {
   loading: false,
   dataMode: "simulated-ai",
   educationRows: [],
-  activeResultStep: "path"
+  activeResultStep: "path",
+  theme: "classic",
+  density: "comfortable"
 };
 
 const careerForm = document.querySelector("#career-form");
@@ -46,6 +48,11 @@ const jobSourceSummary = document.querySelector("#job-source-summary");
 const filterCity = document.querySelector("#filter-city");
 const filterSalary = document.querySelector("#filter-salary");
 const filterSize = document.querySelector("#filter-size");
+const themeToggle = document.querySelector("#theme-toggle");
+const themePanel = document.querySelector("#theme-panel");
+const themeClose = document.querySelector("#theme-close");
+const themeSwatches = [...document.querySelectorAll("[data-theme]")];
+const densityButtons = [...document.querySelectorAll("[data-density]")];
 
 init();
 
@@ -54,6 +61,7 @@ function init() {
   renderRoleOptions();
   renderAssessmentQuestions();
   fillForm(defaults);
+  loadAppearance();
   bindEvents();
   renderPlanner();
 }
@@ -107,6 +115,59 @@ function bindEvents() {
   [filterCity, filterSalary, filterSize].forEach((control) => {
     control.addEventListener("change", renderJobs);
   });
+
+  themeToggle.addEventListener("click", () => {
+    const isOpen = !themePanel.classList.toggle("is-hidden");
+    themeToggle.setAttribute("aria-expanded", String(isOpen));
+  });
+
+  themeClose.addEventListener("click", () => closeThemePanel());
+
+  themeSwatches.forEach((button) => {
+    button.addEventListener("click", () => setAppearance({ theme: button.dataset.theme }));
+  });
+
+  densityButtons.forEach((button) => {
+    button.addEventListener("click", () => setAppearance({ density: button.dataset.density }));
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeThemePanel();
+  });
+}
+
+function closeThemePanel() {
+  themePanel.classList.add("is-hidden");
+  themeToggle.setAttribute("aria-expanded", "false");
+}
+
+function loadAppearance() {
+  const saved = JSON.parse(localStorage.getItem("careermap-appearance") || "{}");
+  setAppearance({
+    theme: saved.theme || state.theme,
+    density: saved.density || state.density
+  }, false);
+}
+
+function setAppearance(next, shouldPersist = true) {
+  state.theme = next.theme || state.theme;
+  state.density = next.density || state.density;
+  document.body.dataset.theme = state.theme;
+  document.body.dataset.density = state.density;
+
+  themeSwatches.forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.theme === state.theme);
+  });
+  densityButtons.forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.density === state.density);
+  });
+
+  if (shouldPersist) {
+    localStorage.setItem("careermap-appearance", JSON.stringify({
+      theme: state.theme,
+      density: state.density
+    }));
+  }
 }
 
 function fillForm(input) {
@@ -157,13 +218,16 @@ function collectAssessment() {
 
 async function generatePlan(overrides = {}) {
   const input = collectInput(overrides);
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), 6000);
   setLoading(true);
 
   try {
     const response = await fetch("./api/career-plan", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(input)
+      body: JSON.stringify(input),
+      signal: controller.signal
     });
 
     if (!response.ok) throw new Error("API unavailable");
@@ -174,6 +238,7 @@ async function generatePlan(overrides = {}) {
     state.result = buildCareerMap(input);
     state.dataMode = "simulated-ai";
   } finally {
+    window.clearTimeout(timeoutId);
     state.activeResultStep = "path";
     setLoading(false);
     renderPlanner();

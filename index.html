@@ -61,8 +61,46 @@
             <p class="eyebrow">Career Intelligence</p>
             <h1>职业路径规划台</h1>
           </div>
-          <p>先填写职业档案并生成结果，系统会按路径地图、差距分析、在招职位的顺序展示；测评是底部的可选功能。</p>
+          <div class="topbar-actions">
+            <p>先填写职业档案并生成结果，系统会按路径地图、差距分析、在招职位的顺序展示；测评是底部的可选功能。</p>
+            <button id="theme-toggle" class="theme-toggle" type="button" aria-expanded="false" aria-controls="theme-panel">自定义外观</button>
+          </div>
         </header>
+
+        <section id="theme-panel" class="theme-panel is-hidden" aria-label="外观设置">
+          <div class="theme-panel-head">
+            <h2>外观</h2>
+            <button id="theme-close" class="icon-button" type="button" aria-label="关闭外观设置">×</button>
+          </div>
+          <div class="theme-group">
+            <h3>主题</h3>
+            <div class="theme-options">
+              <button class="theme-swatch is-active" type="button" data-theme="classic">
+                <span class="swatch-palette classic"></span>
+                经典蓝
+              </button>
+              <button class="theme-swatch" type="button" data-theme="jade">
+                <span class="swatch-palette jade"></span>
+                墨绿
+              </button>
+              <button class="theme-swatch" type="button" data-theme="violet">
+                <span class="swatch-palette violet"></span>
+                紫灰
+              </button>
+              <button class="theme-swatch" type="button" data-theme="ember">
+                <span class="swatch-palette ember"></span>
+                暖橙
+              </button>
+            </div>
+          </div>
+          <div class="theme-group">
+            <h3>密度</h3>
+            <div class="density-options">
+              <button class="density-button is-active" type="button" data-density="comfortable">舒展</button>
+              <button class="density-button" type="button" data-density="compact">紧凑</button>
+            </div>
+          </div>
+        </section>
 
         <section id="planner-view" class="view">
           <form id="career-form" class="planner-grid">
