@@ -639,7 +639,7 @@ function getMigrationFitScore(tierId, sharedCount, missingCount, profile, candid
 
 function buildMigrationFitReason(profile, candidate, transferSignals, tier) {
   const bridge = transferSignals.slice(0, 2).join("、") || profile.coreSkills.slice(0, 2).join("、");
-  return `${profile.name} 的 ${bridge} 可作为入口，${tier.summary}`;
+  return `从${profile.name}出发，可以先复用${bridge}，${tier.summary}`;
 }
 
 function chooseTargetRole(input, verticalPath, horizontalPaths) {
@@ -656,14 +656,14 @@ function buildGapAnalysis(input, currentProfile, targetRole, targetProfile, evid
     .slice(0, 4)
     .map((skill) => ({
       name: skill,
-      reason: `${input.currentRole} 的经历已经覆盖了 ${skill} 的一部分实际场景。`
+      reason: `${input.currentRole}的工作经历已经体现出${skill}，可以作为转型基础。`
     }));
 
   while (strengths.length < 3) {
     const fallback = currentSkills[strengths.length] || "沟通协调";
     strengths.push({
       name: fallback,
-      reason: `这是从 ${input.currentRole} 迁移到 ${targetRole} 时可以直接复用的基础能力。`
+      reason: `从${input.currentRole}转向${targetRole}时，${fallback}可以直接复用。`
     });
   }
 
@@ -741,9 +741,33 @@ function buildMockJobs(targetRole, preferredCity, targetProfile) {
       companySize: companySizes[index % companySizes.length],
       deadline,
       applyUrl: `https://example.com/careermap/jobs/${encodeURIComponent(targetRole)}-${index + 1}`,
-      tags: [targetProfile.domain || "目标岗位", index % 2 === 0 ? "成长型团队" : "成熟业务线", "AI 生成"]
+      tags: buildJobTags(targetRole, targetProfile, index)
     };
   });
+}
+
+function buildJobTags(targetRole, targetProfile, index) {
+  const roleTags = inferJobTagPool(targetRole, targetProfile);
+  const teamTags = ["核心岗位", "跨部门协作", "项目制", "新业务", "总部职能", "业务一线", "管理支持", "增长团队"];
+  const sceneTags = ["流程优化", "客户协同", "经营分析", "活动项目", "组织建设", "数字化项目", "供应商协同", "内容增长"];
+
+  return unique([
+    roleTags[index % roleTags.length],
+    teamTags[(index + targetRole.length) % teamTags.length],
+    sceneTags[(index * 2 + targetRole.length) % sceneTags.length]
+  ]).slice(0, 3);
+}
+
+function inferJobTagPool(role, profile) {
+  if (/活动|策划|市场|品牌/.test(role)) return ["品牌市场", "活动策划", "会展项目", "整合营销"];
+  if (/客户成功|解决方案|政企|商务/.test(role)) return ["企业服务", "客户经营", "方案交付", "商务协同"];
+  if (/产品|运营|增长|用户/.test(role)) return ["互联网平台", "用户增长", "产品协同", "数据驱动"];
+  if (/人力|HR|招聘|培训|组织/.test(role)) return ["组织人才", "员工体验", "招聘项目", "组织发展"];
+  if (/供应链|采购|物流|履约/.test(role)) return ["供应链运营", "履约管理", "成本优化", "供应商协同"];
+  if (/咨询|顾问|数字化|转型/.test(role)) return ["咨询交付", "行业研究", "转型项目", "方案设计"];
+  if (/内容|创作者|社群|主理人/.test(role)) return ["内容社区", "私域运营", "创意表达", "商业化"];
+  if (/办公室|行政|总经理|COO|综合|董秘|幕僚/.test(role)) return ["综合管理", "经营支持", "高层协同", "总部职能"];
+  return [profile.domain || "岗位相关", "项目协同", "业务支持", "专业成长"];
 }
 
 function buildJobTitles(targetRole) {
@@ -758,8 +782,8 @@ function buildJobTitles(targetRole) {
 function buildHeadline(input, profile, targetRole, score) {
   const direction = directionLabels[input.direction];
   const scoreText = score >= 78 ? "可以优先冲刺" : score >= 65 ? "适合用项目作品补强" : "建议先补齐关键能力";
-  const targetText = input.targetRole ? `到 ${targetRole}` : `先看 ${targetRole}`;
-  return `${input.city} ${input.years} 年 ${input.currentRole}，${direction}${targetText}：${scoreText}。`;
+  const targetText = input.targetRole ? `目标是${targetRole}` : `建议先看${targetRole}`;
+  return `${input.city}，${input.years}年${input.currentRole}，${direction}，${targetText}：${scoreText}。`;
 }
 
 function getRequirements(role, profile = inferRoleProfile(role)) {
@@ -827,7 +851,7 @@ function getDifficulty(sharedCount, index) {
 function buildFitReason(profile, role, shared, difficulty) {
   const base = shared[0] || profile.coreSkills[0] || "岗位经验";
   const effort = difficulty === "低" ? "迁移成本较低" : difficulty === "中" ? "需要补一个作品项目" : "需要系统补课和项目验证";
-  return `${profile.name} 的 ${base} 可迁移到 ${role}，${effort}。`;
+  return `从${profile.name}转向${role}时，${base}可以先复用，${effort}。`;
 }
 
 function normalizeAssessment(raw = {}) {

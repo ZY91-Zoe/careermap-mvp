@@ -515,19 +515,19 @@ function renderJobFilters() {
 function renderJobSourceSummary() {
   const meta = state.result.jobsMeta || {
     mode: "mock",
-    note: "当前展示 AI 生成职位，并提供平台搜索入口。",
+    note: "当前展示职位推荐，并提供平台搜索入口。",
     configuredProviders: [],
     successfulProviders: [],
     failedProviders: [],
     searchLinks: []
   };
-  const statusLabel = meta.mode === "live" ? "已接入授权职位" : "AI 生成职位";
+  const statusLabel = meta.mode === "live" ? "已接入授权职位" : "职位推荐";
   const configured = meta.configuredProviders?.length ? `已配置：${meta.configuredProviders.join("、")}` : "可配置授权职位 API 后替换";
   const successful = meta.successfulProviders?.length ? `已返回：${meta.successfulProviders.join("、")}` : "";
   const failed = meta.failedProviders?.length ? `异常：${meta.failedProviders.map((item) => item.provider).join("、")}` : "";
   const sourceNote = meta.mode === "live"
     ? meta.note
-    : "当前先展示结构化生成职位，同时保留 Boss直聘、猎聘、51job、LinkedIn 的搜索入口。";
+    : "当前先展示与目标岗位匹配的职位推荐，同时保留 Boss直聘、猎聘、51job、LinkedIn 的搜索入口。";
 
   jobSourceSummary.innerHTML = `
     <div>
@@ -558,7 +558,7 @@ function renderJobs() {
   jobsList.innerHTML = jobs.length ? jobs.map((job) => `
     <article class="job-card">
       <div>
-        <p class="stage-label">${h(job.city)} · ${h(job.companySize)} · ${h(job.sourceName || "AI 生成")}</p>
+        <p class="stage-label">${h(getJobMetaLine(job))}</p>
         <h4>${h(job.title)}</h4>
         <p>${h(job.company)}</p>
       </div>
@@ -572,6 +572,12 @@ function renderJobs() {
       <a class="secondary-button" href="${h(job.applyUrl)}" target="_blank" rel="noreferrer">查看职位</a>
     </article>
   `).join("") : `<p class="empty-note">当前筛选下没有职位，调整城市、薪资或公司规模后再看。</p>`;
+}
+
+function getJobMetaLine(job) {
+  const parts = [job.city, job.companySize].filter(Boolean);
+  if (job.isLive && job.sourceName) parts.push(job.sourceName);
+  return parts.join(" · ");
 }
 
 function renderRoleOptions() {
